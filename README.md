@@ -68,6 +68,27 @@ For any failure, queue, or offline runner, a Markdown-formatted message is sent 
 
 ---
 
+## Creating the Access Token (PAT) to Query Self-hosted Runners
+
+Before executing the workflow, a **Personal Access Token (PAT)** was manually created from:
+
+🔗 [https://github.com/settings/personal-access-tokens](https://github.com/settings/personal-access-tokens)
+
+This token was generated following the **principle of least privilege**, meaning it includes **only the strictly necessary permissions** to query the status of runners within the organization.
+
+### Required Scopes
+
+According to the [official GitHub Actions documentation](https://docs.github.com/actions/using-github-hosted-runners/about-github-hosted-runners), the following scopes are required:
+
+- ✅ `read:org` → To read organization settings.
+- ✅ `read:actions` → To access runner status.
+- ✅ `read:user` → Implicit in many cases.
+- ✅ `metadata` → Required for API access.
+
+> ⚠️ **This token does not have write permissions or the ability to modify settings**, making it **safe to use** in this read-only context.
+
+---
+
 ## Documentation and reference
 
 Documentation & References
