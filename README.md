@@ -42,6 +42,45 @@ For any failure, queue, or offline runner, a Markdown-formatted message is sent 
 
 ---
 
+
+### ⚙️ Technical Overview
+
+#### 1. **Runner Availability Check**
+- **API Endpoint:** `GET /orgs/{org}/actions/runners`
+- **Logic:**
+  - Filters runners whose names start with a configured prefix (e.g. `self-hosted-linux`).
+  - Matches runners with `.status == "online"`.
+  - If no matching online runner is found, a warning is sent to ClickUp.
+- **Tooling:** Uses `jq` to parse and filter JSON output from GitHub's API.
+
+#### 2. **Queued Workflows Detection**
+- **API Endpoint:** `GET /repos/{owner}/{repo}/actions/runs?per_page=10`
+- **Logic:**
+  - Loops through all listed repositories (`REPOS` array).
+  - Scans the latest 10 workflow runs per repo.
+  - Extracts workflows with `.status == "queued"`.
+  - Aggregates and formats the output per repository.
+  - Sends a message to ClickUp if any queued workflows are found.
+
+#### 3. **Recent Failed Workflows**
+- **API Endpoint:** `GET /repos/{owner}/{repo}/actions/runs?per_page=10`
+- **Logic:**
+  - Calculates current epoch time and compares with `.created_at` timestamps.
+  - Filters runs where `.conclusion == "failure"` and the run occurred within the last **X minutes** (configurable via `FAILURE_TIME_WINDOW_MINUTES`).
+  - Outputs metadata: workflow name, number, branch, time, and a link.
+  - Sends alert to ClickUp if recent failures are found.
+
+#### 4. **ClickUp Message Dispatch**
+- **API Endpoint:** `POST /api/v3/workspaces/{workspace_id}/chat/channels/{channel_id}/messages`
+- **Payload Format:**
+  - Markdown (`content_format: "text/md"`)
+  - Authenticated with a ClickUp token.
+- **Behavior:**
+  - Sends one message per detected issue (offline runner, queued workflows, or failures).
+  - Messages are concise, readable, and actionable.
+
+---
+
 ## 🧪 Example Output
 
 - Runner status: `✅ active` or `❌ inactive`
