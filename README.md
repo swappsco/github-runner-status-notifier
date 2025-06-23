@@ -128,6 +128,46 @@ According to the [official GitHub Actions documentation](https://docs.github.com
 
 ---
 
+## 🧠 State Tracking and Notification Logic
+
+### 🗂️ State Persistence via Temporary File
+
+The script uses a temporary JSON file (`$STATE_FILE`) to persist the **last known state** of each monitored component between runs. This enables intelligent alerting and prevents redundant notifications.
+
+The stored state includes: the status of the runner (last known state, whether it was already reported as inactive, and whether its recovery was already notified), queued workflows (previous count and whether it was already notified), and failed workflows (previous count and whether it was already notified).
+
+---
+
+### 🔔 Notification Logic
+
+Each component has tailored alerting behavior to ensure clarity without spam:
+
+- **Runner:**  
+  - Sends a notification only when the runner transitions from online → offline or offline → online.
+- **Queued Workflows:**  
+  - Notifies the first time workflows are detected in queue.  
+  - Sends a recovery message when the queue clears.
+- **Failed Workflows:**  
+  - Notifies only once when failures are detected within the configured time window.
+
+This logic ensures that alerts are **meaningful and state-aware**, avoiding unnecessary repetition.
+
+---
+
+### 🛡️ GitHub API Error Handling
+
+An additional validation layer was implemented to detect errors in GitHub API responses.
+
+Previously, if the API call failed (e.g., due to an invalid or expired token), the script could **mistakenly interpret the runner as offline** or return malformed data. Now, the script:
+
+- Checks if the API response contains the expected structure.
+- Aborts processing if the response is invalid.
+- Sends a dedicated alert to ClickUp indicating that **authentication failed or the API call was unsuccessful**.
+
+This prevents false alarms and improves observability in the case of access or token-related issues.
+
+---
+
 ## Documentation and reference
 
 Documentation & References
