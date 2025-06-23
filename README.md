@@ -19,6 +19,16 @@ The script relies on environment variables declared at the top:
 
 ---
 
+### 0. Repo files
+
+```
+/scripts/runnermonitor.sh <- Main Script
+
+/scripts/otherversions/* <- Granular versions
+```
+
+---
+
 ## 🚀 What It Does
 
 ### 1. Check Runner Status
